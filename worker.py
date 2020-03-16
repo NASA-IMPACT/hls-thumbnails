@@ -18,12 +18,6 @@ HIGH_VAL = 255.
 LOW_VAL = math.e
 LOW_THRES = 100
 
-LINEAR_STRETCH = 'linear'
-LOG_STRETCH = 'log'
-
-STRETCHES = [LINEAR_STRETCH, LOG_STRETCH]
-
-
 # Instrument based configurations
 LANDSAT_BANDS = ['band04', 'band03', 'band02']
 LANDSAT_ID = 'L30'
@@ -31,43 +25,18 @@ LANDSAT_ID = 'L30'
 SENTINEL_BANDS = ['B04', 'B03', 'B02']
 SENTINEL_ID = 'S30'
 
-
 # Image configurations
-# based off of Browse Image ICD for GIBS
-DEST_RES = 2.74658203125e-4
-DST_CRS = { 'init': 'EPSG:4326' }
-
 IMG_SIZE = 1000
-NUM_CHANNELS = 4
-
-# File related constants
-DATE_PATTERN = '%Y-%m-%dT%H:%M:%S.%f'
-
-METADATA_FORMAT = {
-    "ProviderProductId": "",
-    "ProductionDateTime": "",
-    "DataStartDateTime": "",
-    "DataEndDateTime": "",
-    "DataDay": "",
-    "PartialId": ""
-}
-
-ROOT_KEY = 'ImageryMetadata'
-
 
 # for lambda
 FILE_LOCATION = "./{}"
-TRUE_COLOR_LOCATION = FILE_LOCATION.format("true_color/{}")
 THUMBNAIL_LOCATION = FILE_LOCATION.format("thumbnails/{}")
 
 class Browse:
 
-    def __init__(self, file_name, stretch=LINEAR_STRETCH):
+    def __init__(self, file_name, stretch='log'):
         self.file_name = file_name
-        if stretch not in STRETCHES:
-            exit(0)
-        else:
-            self.stretch = stretch
+        self.stretch = stretch
         self.attributes = {}
         self.define_high_low()
         self.select_constellation()
