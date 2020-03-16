@@ -2,17 +2,14 @@ import boto3
 import gc
 
 import os
-import shutil
 import update_credentials
 
 from worker import Browse
-from glob import glob
 
 # bucket_name = name of the bucket where the hdf files are located
 # profile_name = aws profile name.
 
 def download_and_create(bucket_name,prefix=''):
-    processed_files = glob('*.xml')
     creds = update_credentials.assume_role('arn:aws:iam::611670965994:role/gcc-S3Test','brian_test')
     s3 = boto3.resource('s3',
             aws_access_key_id=creds['AccessKeyId'],
@@ -48,6 +45,6 @@ def download_and_create(bucket_name,prefix=''):
       gc.collect()
 
 # download l30 data and create merged geotiffs.
-#download_and_create('hls-global', prefix='L30/data/')
+download_and_create('hls-global', prefix='L30/data/')
 # download s30 data and create merged geotiffs.
-download_and_create('hls-global', prefix ='S30/data/HLS.S30.T3')
+download_and_create('hls-global', prefix ='S30/data/')

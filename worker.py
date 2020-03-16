@@ -1,26 +1,14 @@
 import math
-import os
 import rasterio
 import sys
 
-import datetime
 import numpy as np
-import rasterio.merge as merge
-import xmltodict
 import update_credentials
 import boto3
 
-from glob import glob
-from mgrs import MGRS
 from PIL import Image
 from pyhdf.SD import SD, SDC
-
-from rasterio.io import MemoryFile
-from rasterio.enums import ColorInterp
-from rasterio.warp import calculate_default_transform, reproject, Resampling
 from botocore.exceptions import ClientError
-
-from dicttoxml import dicttoxml
 
 
 # Calculation configurations
