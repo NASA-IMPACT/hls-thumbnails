@@ -49,10 +49,9 @@ class Browse:
         self.high_thres = HIGH_THRES
         self.low_thres = LOW_THRES
         self.low_value = LOW_VAL
-        if self.stretch == LOG_STRETCH:
-            self.high_thres = math.log(self.high_thres)
-            self.low_thres = math.log(self.low_thres)
-            self.low_value = LOW_VAL
+        self.high_thres = math.log(self.high_thres)
+        self.low_thres = math.log(self.low_thres)
+        self.low_value = LOW_VAL
         self.diff = self.high_thres - self.low_thres
 
     def select_constellation(self):
@@ -78,8 +77,7 @@ class Browse:
         data_file.end()
         extracted_data = np.array(extracted_data)
         extracted_data[np.where(extracted_data <= self.low_thres)] = self.low_value
-        if self.stretch == LOG_STRETCH:
-            extracted_data = np.log(extracted_data)
+        extracted_data = np.log(extracted_data)
         extracted_data[np.where(extracted_data >= self.high_thres)] = HIGH_VAL
         indices = np.where(
             (extracted_data > self.low_thres) & (extracted_data < self.high_thres)
