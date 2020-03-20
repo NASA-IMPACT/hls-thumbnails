@@ -46,12 +46,32 @@ def s3_test_bucket(mock_environment):
     with mock_s3():
         bucket = boto_resource('s3').create_bucket(Bucket=S3_TEST_BUCKET_NAME)
         for file_path, name in get_files(L30_TEST_DATA_PATH):
-            bucket.upload_file(file_path, f'L30/data/{name}')
+            bucket.upload_file(file_path, 'L30/data/' + name)
         for file_path, name in get_files(S30_TEST_DATA_PATH):
-            bucket.upload_file(file_path, f'S30/data/{name}')
+            bucket.upload_file(file_path, 'S30/data/' + name)
         yield bucket
 
 
 class TestThumbnails:
     def test_thumbnails(self, mock_environment, s3_test_bucket):
+        # Run the command.
         run_browse_imagery()
+
+        # We should have jpeg files as thumbnails in the bucket
+        # for each hd5 file.
+
+        jpeg_files = [
+            o.key
+            for o in s3_test_bucket.objects.all()
+            if o.key.endswith('.jpeg')
+        ]
+        # Check that L30 thumbnails are created.
+        for file_path, name in get_files(L30_TEST_DATA_PATH):
+            if name.endswith('.hdf'):
+                key = 'L30/thumbnail/' + name.replace('.hdf', '.jpeg')
+                assert key in jpeg_files
+        # Check that S30 thumbnails are created.
+        for file_path, name in get_files(S30_TEST_DATA_PATH):
+            if name.endswith('.hdf'):
+                key = 'S30/thumbnail/' + name.replace('.hdf', '.jpeg')
+                assert key in jpeg_files
