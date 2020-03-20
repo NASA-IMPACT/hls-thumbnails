@@ -11,7 +11,6 @@ from pyhdf.SD import SD, SDC
 from botocore.exceptions import ClientError
 
 from hls_thumbnails import update_credentials
-from hls_thumbnails.config import get_config
 
 
 # Calculation configurations
@@ -38,11 +37,11 @@ THUMBNAIL_LOCATION = FILE_LOCATION.format("thumbnails/{}")
 
 class Browse:
 
-    def __init__(self, file_name, stretch='log'):
+    def __init__(self, file_name, stretch='log', args=None):
         self.file_name = file_name
         self.stretch = stretch
         self.attributes = {}
-        self.config = get_config()
+        self.args = args
         self.define_high_low()
         self.select_constellation()
 
@@ -112,7 +111,7 @@ class Browse:
         img = Image.fromarray(extracted_data)
         img = img.resize((IMG_SIZE, IMG_SIZE))
         img.save(thumbnail_file_name)
-        self.move_to_S3(self.config['output_bucket_name'], thumbnail_file_name)
+        self.move_to_S3(self.args.output_bucket_name, thumbnail_file_name)
         return thumbnail_file_name
 
     def move_to_S3(self, bucket_name, report_name):
@@ -125,7 +124,7 @@ class Browse:
         product = report_name.split(".")[1]
         object_name = "/".join([product, "thumbnail", report_name])
         creds = update_credentials.assume_role(
-            self.config['role_arn'], self.config['role_session_name']
+            self.args.role_arn, self.args.role_session_name
         )
         client = boto3.client(
             "s3",
@@ -139,9 +138,3 @@ class Browse:
             logging.error(e)
             return False
         return True
-
-
-if __name__ == "__main__":
-    file_name = sys.argv[1]
-    browse = Browse(file_name, stretch='log')
-    thumbnail_file_name = browse.prepare()

@@ -4,7 +4,7 @@ import boto3
 
 from hls_thumbnails import update_credentials
 from hls_thumbnails.worker import Browse
-from hls_thumbnails.config import get_config
+from hls_thumbnails.cmd_args import get_args
 
 
 def create_dir(directory):
@@ -17,14 +17,17 @@ def create_dir(directory):
 # profile_name = aws profile name.
 
 
-def download_and_create(bucket_name, prefix=''):
-    # Make sure the download path exists.
-    create_dir(prefix)
+def download_and_create(args=None):
+    args = args or get_args()
+    bucket_name = args.input_bucket_name
+    prefix = args.input_prefix
 
-    config = get_config()
+    # Make sure the download path exists.
+    if prefix:
+        create_dir(prefix)
+
     creds = update_credentials.assume_role(
-        config['role_arn'], config['role_session_name']
-    )
+        args.role_arn, args.role_session_name)
     s3 = boto3.resource(
         's3',
         aws_access_key_id=creds['AccessKeyId'],
@@ -50,7 +53,7 @@ def download_and_create(bucket_name, prefix=''):
         print(file_name)
         if os.path.exists(file_name):
             print("running for:", file_name)
-            browse = Browse(file_name, stretch='log')
+            browse = Browse(file_name, stretch='log', args=args)
             thumbnail_name = browse.prepare()
             del(browse)
             print("Done:", thumbnail_name)
@@ -61,13 +64,11 @@ def download_and_create(bucket_name, prefix=''):
         gc.collect()
 
 
-def run_browse_imagery():
-    config = get_config()
-    # download l30 data and create merged geotiffs.
-    download_and_create(config['l30_bucket_name'], prefix=config['l30_prefix'])
-    # download s30 data and create merged geotiffs.
-    download_and_create(config['s30_bucket_name'], prefix=config['s30_prefix'])
-
-
 if __name__ == '__main__':
-    run_browse_imagery()
+    args = get_args()
+    # download l30 data and create merged geotiffs.
+    args.prefix = 'L30/data/'
+    download_and_create(args)
+    # download s30 data and create merged geotiffs.
+    args.prefix = 'S30/data/'
+    download_and_create(args)

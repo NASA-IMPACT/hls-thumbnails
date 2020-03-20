@@ -17,7 +17,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'run-browse-imagery=hls_thumbnails.run_browse_imagery:run_browse_imagery',  # noqa
+            'run-browse-imagery=hls_thumbnails.run_browse_imagery:download_and_create',  # noqa
         ],
     },
 )

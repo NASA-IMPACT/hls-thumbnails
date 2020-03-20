@@ -1,6 +1,6 @@
 # Test if this module can be installed on top of the HLS-Sentinel image.
 
-FROM 018923174646.dkr.ecr.us-west-2.amazonaws.com/hls-sentinel:latest
+FROM 018923174646.dkr.ecr.us-west-2.amazonaws.com/hls-base:latest
 RUN pip install --upgrade awscli numpy && pip install --ignore-installed pyparsing
 
 
