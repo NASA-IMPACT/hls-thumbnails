@@ -1,14 +1,17 @@
 import math
 import rasterio
 import sys
+import logging
 
 import numpy as np
-import update_credentials
 import boto3
 
 from PIL import Image
 from pyhdf.SD import SD, SDC
 from botocore.exceptions import ClientError
+
+from hls_thumbnails import update_credentials
+from hls_thumbnails.config import get_config
 
 
 # Calculation configurations
@@ -32,19 +35,22 @@ IMG_SIZE = 1000
 FILE_LOCATION = "./{}"
 THUMBNAIL_LOCATION = FILE_LOCATION.format("thumbnails/{}")
 
+
 class Browse:
 
     def __init__(self, file_name, stretch='log'):
         self.file_name = file_name
         self.stretch = stretch
         self.attributes = {}
+        self.config = get_config()
         self.define_high_low()
         self.select_constellation()
 
     def define_high_low(self):
         """
         Public:
-            Define High and Low values as thresholds based on the stretch type defined by user.
+            Define High and Low values as thresholds
+            based on the stretch type defined by user.
         """
         self.high_thres = HIGH_THRES
         self.low_thres = LOW_THRES
@@ -57,7 +63,8 @@ class Browse:
     def select_constellation(self):
         """
         Public:
-            Based on file name of the granule it decides on which bands to use for image generation
+            Based on file name of the granule it decides
+            on which bands to use for image generation
         """
         self.bands = LANDSAT_BANDS
         if SENTINEL_ID in self.file_name:
@@ -76,11 +83,13 @@ class Browse:
         self.attributes = data_file.attributes()
         data_file.end()
         extracted_data = np.array(extracted_data)
-        extracted_data[np.where(extracted_data <= self.low_thres)] = self.low_value
+        extracted_data[np.where(extracted_data <= self.low_thres)] \
+            = self.low_value
         extracted_data = np.log(extracted_data)
         extracted_data[np.where(extracted_data >= self.high_thres)] = HIGH_VAL
         indices = np.where(
-            (extracted_data > self.low_thres) & (extracted_data < self.high_thres)
+            (extracted_data > self.low_thres)
+            & (extracted_data < self.high_thres)
         )
         extracted_data[indices] = (
             HIGH_VAL * (extracted_data[indices] - self.low_thres) / self.diff
@@ -103,7 +112,7 @@ class Browse:
         img = Image.fromarray(extracted_data)
         img = img.resize((IMG_SIZE, IMG_SIZE))
         img.save(thumbnail_file_name)
-        self.move_to_S3('hls-global',thumbnail_file_name)
+        self.move_to_S3(self.config['output_bucket_name'], thumbnail_file_name)
         return thumbnail_file_name
 
     def move_to_S3(self, bucket_name, report_name):
@@ -116,7 +125,7 @@ class Browse:
         product = report_name.split(".")[1]
         object_name = "/".join([product, "thumbnail", report_name])
         creds = update_credentials.assume_role(
-            "arn:aws:iam::611670965994:role/gcc-S3Test", "brian_test"
+            self.config['role_arn'], self.config['role_session_name']
         )
         client = boto3.client(
             "s3",
@@ -130,6 +139,7 @@ class Browse:
             logging.error(e)
             return False
         return True
+
 
 if __name__ == "__main__":
     file_name = sys.argv[1]

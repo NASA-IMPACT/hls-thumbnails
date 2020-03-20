@@ -1,7 +1,7 @@
-
 import boto3
 
-def assume_role(role_arn,role_session_name):
+
+def assume_role(role_arn, role_session_name):
     '''
     This method allows users to assume roles using boto3.
     Requires the role_arn and a session name. Returns
@@ -12,6 +12,13 @@ def assume_role(role_arn,role_session_name):
     and AWS_SESSION_TOKEN are extracted similarly using
     ['SecretAccessKey'],['SessionToken'] respectively.
     '''
+    if role_arn == '':
+        return {
+            'AccessKeyId': None,
+            'SecretAccessKey': None,
+            'SessionToken': None,
+        }
     client = boto3.client('sts')
-    creds = client.assume_role(RoleArn=role_arn, RoleSessionName=role_session_name)
+    creds = client.assume_role(
+        RoleArn=role_arn, RoleSessionName=role_session_name)
     return creds['Credentials']
