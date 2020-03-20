@@ -1,7 +1,6 @@
 import os
 import gc
 import boto3
-from pathlib import Path
 
 from hls_thumbnails import update_credentials
 from hls_thumbnails.worker import Browse
@@ -9,14 +8,19 @@ from hls_thumbnails.config import get_config
 
 
 def create_dir(directory):
-    Path(directory).mkdir(parents=True, exist_ok=True)
+    try:
+        os.makedirs(directory)
+    except Exception:
+        pass
 
 # bucket_name = name of the bucket where the hdf files are located
 # profile_name = aws profile name.
 
 
 def download_and_create(bucket_name, prefix=''):
-    create_dir(f'./{prefix}')
+    # Make sure the download path exists.
+    create_dir(prefix)
+
     config = get_config()
     creds = update_credentials.assume_role(
         config['role_arn'], config['role_session_name']
@@ -32,7 +36,7 @@ def download_and_create(bucket_name, prefix=''):
     for obj in bucket.objects.filter(Prefix=prefix):
         if obj.key == prefix or obj.key.endswith('.hdr'):
             continue
-        file_name = f"./{obj.key}"
+        file_name = './' + obj.key
         print(file_name)
         # splits = obj.key.split('.')[1:4]
         print('Downloading File', file_name)
