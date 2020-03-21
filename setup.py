@@ -5,7 +5,6 @@ setup(
     version="0.1",
     packages=['hls_thumbnails'],
     install_requires=[
-        'boto3',
         'numpy',
         'rasterio',
         'Pillow',
@@ -13,11 +12,11 @@ setup(
     ],
     extras_require={
         "develop": ["flake8"],
-        "test": ["pytest", "moto"]
+        "test": ["pytest"]
     },
     entry_points={
         'console_scripts': [
-            'run-browse-imagery=hls_thumbnails.run_browse_imagery:download_and_create',  # noqa
+            'create_thumbnail=hls_thumbnails.create_thumbnail:create_thumbnail',
         ],
     },
 )
