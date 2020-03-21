@@ -16,20 +16,23 @@ LOW_VAL = math.e
 LOW_THRES = 100
 
 # Instrument based configurations
-LANDSAT_BANDS = ['band04', 'band03', 'band02']
-LANDSAT_ID = 'L30'
-
-SENTINEL_BANDS = ['B04', 'B03', 'B02']
 SENTINEL_ID = 'S30'
+LANDSAT_ID = 'L30'
+BANDS = {
+    SENTINEL_ID: ['B04', 'B03', 'B02'],
+    LANDSAT_ID: ['band04', 'band03', 'band02'],
+}
 
 # Image configurations
 IMG_SIZE = 1000
 
 
 class Thumbnail:
-    def __init__(self, input_file, output_file, stretch='log'):
+    def __init__(self, input_file, output_file,
+                 instrument=None, stretch='log'):
         self.input_file = input_file
         self.output_file = output_file
+        self.instrument = instrument
         self.stretch = stretch
         self.attributes = {}
         self.define_high_low()
@@ -52,12 +55,15 @@ class Thumbnail:
     def select_constellation(self):
         """
         Public:
-            Based on file name of the granule it decides
-            on which bands to use for image generation
+            Decides on which bands to use for image generation.
+            If instrument is not provided, decide base on filename.
         """
-        self.bands = LANDSAT_BANDS
-        if SENTINEL_ID in self.input_file:
-            self.bands = SENTINEL_BANDS
+        if self.instrument is None:
+            if SENTINEL_ID in self.input_file:
+                self.instrument = SENTINEL_ID
+            else:
+                self.instrument = LANDSAT_ID
+        self.bands = BANDS[self.instrument]
 
     def prepare(self):
         """
@@ -101,9 +107,9 @@ class Thumbnail:
         img.save(self.output_file)
 
 
-SHORT_OPTIONS = 'i:o:'
-LONG_OPTIONS = ['inputfile=', 'outputfile=']
-HELP_TEXT = 'create_thumbnail -i <input_file> -o <output_file>'
+SHORT_OPTIONS = 'i:o:s:'
+LONG_OPTIONS = ['inputfile=', 'outputfile=', 'instrument=']
+HELP_TEXT = 'create_thumbnail -i <input_file> -o <output_file> -s [L30|S30]'
 
 
 def create_thumbnail():
@@ -114,17 +120,24 @@ def create_thumbnail():
         print(HELP_TEXT)
         sys.exit(2)
 
-    input_file, output_file = None, None
+    input_file, output_file, instrument = None, None, None
     for opt, arg in opts:
         if opt in ('-i', '--inputfile'):
             input_file = arg
         elif opt in ('-o', '--outputfile'):
             output_file = arg
+        elif opt in ('-s', '--instrument'):
+            instrument = arg
 
     if input_file is None or output_file is None:
         print(HELP_TEXT)
         sys.exit(2)
-    Thumbnail(input_file, output_file).prepare()
+
+    if instrument not in [LANDSAT_ID, SENTINEL_ID]:
+        print('Invalid instrument: ' + instrument)
+        sys.exit(2)
+
+    Thumbnail(input_file, output_file, instrument).prepare()
 
 
 if __name__ == "__main__":
