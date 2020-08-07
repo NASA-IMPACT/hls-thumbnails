@@ -20,7 +20,7 @@ SENTINEL_ID = "S30"
 LANDSAT_ID = "L30"
 BANDS = {
     SENTINEL_ID: ["B04", "B03", "B02"],
-    LANDSAT_ID: ["band04", "band03", "band02"],
+    LANDSAT_ID: ["B04", "B03", "B02"],
 }
 
 # Image configurations
