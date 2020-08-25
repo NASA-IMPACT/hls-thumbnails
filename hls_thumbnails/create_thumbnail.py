@@ -89,8 +89,8 @@ class Thumbnail:
                 HIGH_VAL * (extracted_data - self.low_thres) / self.diff
         )
         print(np.max(extracted_data),np.min(extracted_data))
-        extracted_data[np.where(extracted_data <= LOW_VAL)] = LOW_VAL
-        extracted_data[np.where(extracted_data >= HIGH_VAL)] = HIGH_VAL
+        #extracted_data[np.where(extracted_data <= LOW_VAL)] = LOW_VAL
+        #extracted_data[np.where(extracted_data >= HIGH_VAL)] = HIGH_VAL
         extracted_data = extracted_data.astype(rasterio.uint8)
         file_name = self.input_file.split("/")[-1]
         self.prepare_thumbnail(extracted_data, file_name)
