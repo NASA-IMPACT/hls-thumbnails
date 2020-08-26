@@ -70,37 +70,44 @@ class Thumbnail:
         extracted_data = list()
         for band in self.bands:
             band_data = data_file.select(band)
+            '''
+            data = band_data.get()
+            for i in range(data.shape[0]):
+                for j in range(data.shape[1]):
+                    if data[i,j] == -9999:
+                        pass
+                    elif data[i,j] <= math.e**self.low_thres:
+                        data[i,j] = LOW_VAL
+                    elif data[i,j] >= math.e**self.high_thres:
+                        data[i,j] = HIGH_VAL
+                    else:
+                        data[i,j] = HIGH_VAL* (np.log(data[i,j]) - self.low_thres) / self.diff
+            extracted_data.append(data)
+            '''
             extracted_data.append(band_data.get())
         self.attributes = data_file.attributes()
         data_file.end()
-        extracted_data = np.ma.masked_less_equal(np.array(extracted_data),-9999)
-        extracted_data = np.ma.log(extracted_data)
-        extracted_data = np.ma.masked_less_equal(extracted_data,self.low_thres).filled(fill_value=self.low_thres)
-        extracted_data = np.ma.masked_greater_equal(extracted_data,self.high_thres).filled(fill_value=self.high_thres)
-        '''
+        extracted_data = np.array(extracted_data)
+        output_data = np.empty(extracted_data.shape)
         indices = np.where(
-            (extracted_data > self.low_thres) & (extracted_data < self.high_thres)
+            (extracted_data > LOW_THRES) & (extracted_data < HIGH_THRES)
         )
-        extracted_data[indices] = (
-                HIGH_VAL * (extracted_data[indices] - self.low_thres) / self.diff
+        output_data[indices] = (
+            HIGH_VAL * (np.ma.log(extracted_data[indices]) - self.low_thres) / self.diff
         )
-        '''
-        extracted_data = (
-                HIGH_VAL * (extracted_data - self.low_thres) / self.diff
-        )
-        print(np.max(extracted_data),np.min(extracted_data))
-        #extracted_data[np.where(extracted_data <= LOW_VAL)] = LOW_VAL
-        #extracted_data[np.where(extracted_data >= HIGH_VAL)] = HIGH_VAL
-        extracted_data = extracted_data.astype(rasterio.uint8)
+        output_data[np.where(extracted_data <= LOW_THRES)] = LOW_VAL
+       # output_data[np.where(extracted_data == -9999)] = HIGH_VAL
+        output_data[np.where((extracted_data >= HIGH_THRES) | (extracted_data == -9999))] = HIGH_VAL
+        output_data = output_data.astype(rasterio.uint8)
         file_name = self.input_file.split("/")[-1]
-        self.prepare_thumbnail(extracted_data, file_name)
+        self.prepare_thumbnail(output_data, file_name)
 
     def prepare_thumbnail(self, extracted_data, file_name):
         """
         Public:
             Creates thumbnail of the granule
         Args:
-            extracted_data - numpy array of the image
+            output_data - numpy array of the image
             file_name - Name of the file being opened
         """
         extracted_data = np.rollaxis(extracted_data, 0, 3)
