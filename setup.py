@@ -4,7 +4,12 @@ setup(
     name="hls_thumbnails",
     version="0.1",
     packages=["hls_thumbnails"],
-    install_requires=["numpy", "rasterio", "Pillow", "pyhdf"],
+    install_requires=[
+        "numpy",
+        "rasterio",
+        "Pillow",
+        "pyhdf==0.10.5"
+    ],
     extras_require={"test": ["flake8", "pytest"]},
     entry_points={
         "console_scripts": [
