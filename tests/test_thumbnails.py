@@ -1,4 +1,7 @@
-from os import path, listdir, remove
+from os import path, listdir
+from tempfile import TemporaryDirectory
+
+import pytest
 from hls_thumbnails.create_thumbnail import Thumbnail
 
 
@@ -13,9 +16,9 @@ def get_files(directory):
             yield filename
 
 
-class TestThumbnails:
-    def test_thumbnails(self):
-        for f in get_files(TEST_DATA_PATH):
-            Thumbnail(f, "test.jpeg").prepare()
-            assert path.exists("test.jpeg")
-            remove("test.jpeg")
+@pytest.mark.parametrize("input_file", get_files(TEST_DATA_PATH))
+def test_thumbnails(input_file):
+    with TemporaryDirectory() as tmpdir:
+        output_file = path.join(tmpdir, "test.jpeg")
+        Thumbnail(input_file, output_file).prepare()
+        assert path.exists(output_file)
