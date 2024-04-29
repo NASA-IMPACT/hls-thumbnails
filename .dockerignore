@@ -1,6 +1,5 @@
 *
 !hls_thumbnails/
 !tests/
-!MANIFEST.in
 !setup.py
 !tox.ini
