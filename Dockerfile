@@ -1,14 +1,12 @@
-FROM osgeo/gdal:ubuntu-full-3.0.3
-
-SHELL ["/bin/bash", "-c"]
+FROM osgeo/gdal:ubuntu-small-3.0.3
 
 RUN : \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
     build-essential \
-    libhdf4-dev \
+    libjpeg-dev \
+    zlib1g-dev \
     python3-dev \
-    python3-numpy \
     python3-pip \
     python3-venv \
     && apt-get clean \
