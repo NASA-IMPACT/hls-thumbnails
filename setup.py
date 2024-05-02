@@ -8,7 +8,6 @@ setup(
         "numpy",
         "rasterio",
         "Pillow",
-        "pyhdf==0.10.5"
     ],
     extras_require={"test": ["flake8", "pytest"]},
     entry_points={
